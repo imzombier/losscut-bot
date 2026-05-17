@@ -15,7 +15,7 @@ import sys
 # FIX WINDOWS EMOJI ERROR
 sys.stdout.reconfigure(encoding='utf-8')
 
-# BOT TOKEN FROM RENDER ENVIRONMENT
+# BOT TOKEN
 TOKEN = os.getenv("BOT_TOKEN")
 
 # BOT
@@ -69,7 +69,7 @@ async def get_amount(message: Message, state: FSMContext):
 
         await message.answer(
             "📈 Send Entry Back Odds\n\n"
-            "Example : 3.0"
+            "Example : 10"
         )
 
         await state.set_state(BetState.back_odds)
@@ -84,6 +84,7 @@ async def get_amount(message: Message, state: FSMContext):
 async def get_back_odds(message: Message, state: FSMContext):
 
     try:
+
         back_odds = float(message.text)
 
         if back_odds <= 1:
@@ -100,7 +101,7 @@ async def get_back_odds(message: Message, state: FSMContext):
             f"🔥 LOSSCUT PRO ANALYSIS\n\n"
 
             f"💰 Entry Stake : ₹{amount:.0f}\n"
-            f"📈 Entry Odds : {back_odds}\n\n"
+            f"📈 Entry Odds : {back_odds:.1f}\n\n"
 
             f"━━━━━━━━━━━━━━━━\n\n"
 
@@ -108,12 +109,14 @@ async def get_back_odds(message: Message, state: FSMContext):
         )
 
         # GREEN BOOK
-        lay_odds = round(back_odds - 1, 1)
+        start_lay = 2.0
 
-        if lay_odds <= 1:
-            lay_odds = 1.1
+        if back_odds < 2:
+            start_lay = 1.1
 
-        while lay_odds < back_odds:
+        lay_odds = start_lay
+
+        while lay_odds <= back_odds:
 
             lay_amount = (
                 back_odds * amount
@@ -127,7 +130,7 @@ async def get_back_odds(message: Message, state: FSMContext):
                 f"→ +₹{profit:.0f}\n"
             )
 
-            lay_odds += 0.1
+            lay_odds += 0.5
 
         # SAFE EXIT
         response += (
@@ -135,47 +138,47 @@ async def get_back_odds(message: Message, state: FSMContext):
             f"🟡 SAFE EXIT OPTIONS\n\n"
         )
 
-        zero_odds = round(back_odds, 1)
+        safe_odds = back_odds
 
-        for i in range(5):
+        for i in range(6):
 
             lay_amount = (
                 back_odds * amount
-            ) / zero_odds
+            ) / safe_odds
 
-            no_loss = lay_amount - amount
+            safe_result = lay_amount - amount
 
             response += (
-                f"🟡 {zero_odds:.1f} "
+                f"🟡 {safe_odds:.1f} "
                 f"→ Lay ₹{lay_amount:.0f} "
-                f"→ ₹{no_loss:.0f}\n"
+                f"→ ₹{safe_result:.0f}\n"
             )
 
-            zero_odds += 0.1
+            safe_odds += 0.5
 
-        # LOW LOSS
+        # RISK CONTROL
         response += (
             f"\n━━━━━━━━━━━━━━━━\n\n"
             f"🔴 RISK CONTROL\n\n"
         )
 
-        low_loss_odds = round(back_odds + 0.5, 1)
+        risk_odds = back_odds + 3
 
-        for i in range(5):
+        for i in range(6):
 
             lay_amount = (
                 back_odds * amount
-            ) / low_loss_odds
+            ) / risk_odds
 
             loss = amount - lay_amount
 
             response += (
-                f"🔴 {low_loss_odds:.1f} "
+                f"🔴 {risk_odds:.1f} "
                 f"→ Lay ₹{lay_amount:.0f} "
                 f"→ -₹{loss:.0f}\n"
             )
 
-            low_loss_odds += 0.2
+            risk_odds += 1
 
         response += (
             f"\n━━━━━━━━━━━━━━━━\n"
