@@ -57,24 +57,30 @@ async def start_bot(message: Message, state: FSMContext):
 async def get_amount(message: Message, state: FSMContext):
 
     try:
+
         amount = float(message.text)
 
         if amount <= 0:
+
             await message.answer(
                 "❌ Enter valid amount"
             )
+
             return
 
         await state.update_data(amount=amount)
 
         await message.answer(
             "📈 Send Entry Back Odds\n\n"
-            "Example : 10"
+            "Example : 4.0"
         )
 
-        await state.set_state(BetState.back_odds)
+        await state.set_state(
+            BetState.back_odds
+        )
 
     except:
+
         await message.answer(
             "❌ Send valid amount"
         )
@@ -88,9 +94,11 @@ async def get_back_odds(message: Message, state: FSMContext):
         back_odds = float(message.text)
 
         if back_odds <= 1:
+
             await message.answer(
                 "❌ Odds must be greater than 1"
             )
+
             return
 
         data = await state.get_data()
@@ -104,19 +112,29 @@ async def get_back_odds(message: Message, state: FSMContext):
             f"📈 Entry Odds : {back_odds:.1f}\n\n"
 
             f"━━━━━━━━━━━━━━━━\n\n"
+        )
 
+        # =========================
+        # PROFIT BOOK OPTIONS
+        # =========================
+
+        response += (
             f"🟢 PROFIT BOOK OPTIONS\n\n"
         )
 
-        # GREEN BOOK
-        start_lay = 2.0
+        profit_results = 10
 
-        if back_odds < 2:
-            start_lay = 1.1
+        profit_start = 1.0
+        profit_end = back_odds
 
-        lay_odds = start_lay
+        profit_step = (
+            (profit_end - profit_start)
+            / (profit_results - 1)
+        )
 
-        while lay_odds <= back_odds:
+        lay_odds = profit_start
+
+        for i in range(profit_results):
 
             lay_amount = (
                 back_odds * amount
@@ -130,23 +148,38 @@ async def get_back_odds(message: Message, state: FSMContext):
                 f"→ +₹{profit:.0f}\n"
             )
 
-            lay_odds += 0.5
+            lay_odds += profit_step
 
-        # SAFE EXIT
+        # =========================
+        # SAFE EXIT OPTIONS
+        # =========================
+
         response += (
             f"\n━━━━━━━━━━━━━━━━\n\n"
             f"🟡 SAFE EXIT OPTIONS\n\n"
         )
 
-        safe_odds = back_odds
+        safe_results = 10
 
-        for i in range(6):
+        safe_start = back_odds
+        safe_end = back_odds + 2
+
+        safe_step = (
+            (safe_end - safe_start)
+            / (safe_results - 1)
+        )
+
+        safe_odds = safe_start
+
+        for i in range(safe_results):
 
             lay_amount = (
                 back_odds * amount
             ) / safe_odds
 
-            safe_result = lay_amount - amount
+            safe_result = (
+                lay_amount - amount
+            )
 
             response += (
                 f"🟡 {safe_odds:.1f} "
@@ -154,23 +187,38 @@ async def get_back_odds(message: Message, state: FSMContext):
                 f"→ ₹{safe_result:.0f}\n"
             )
 
-            safe_odds += 0.5
+            safe_odds += safe_step
 
+        # =========================
         # RISK CONTROL
+        # =========================
+
         response += (
             f"\n━━━━━━━━━━━━━━━━\n\n"
             f"🔴 RISK CONTROL\n\n"
         )
 
-        risk_odds = back_odds + 3
+        risk_results = 10
 
-        for i in range(6):
+        risk_start = back_odds + 2
+        risk_end = back_odds + 10
+
+        risk_step = (
+            (risk_end - risk_start)
+            / (risk_results - 1)
+        )
+
+        risk_odds = risk_start
+
+        for i in range(risk_results):
 
             lay_amount = (
                 back_odds * amount
             ) / risk_odds
 
-            loss = amount - lay_amount
+            loss = (
+                amount - lay_amount
+            )
 
             response += (
                 f"🔴 {risk_odds:.1f} "
@@ -178,7 +226,7 @@ async def get_back_odds(message: Message, state: FSMContext):
                 f"→ -₹{loss:.0f}\n"
             )
 
-            risk_odds += 1
+            risk_odds += risk_step
 
         response += (
             f"\n━━━━━━━━━━━━━━━━\n"
@@ -191,6 +239,7 @@ async def get_back_odds(message: Message, state: FSMContext):
         await state.clear()
 
     except:
+
         await message.answer(
             "❌ Send valid odds"
         )
