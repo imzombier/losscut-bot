@@ -6,25 +6,28 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from flask import Flask
+
 import asyncio
 import threading
 import os
 import sys
 
-# FIX EMOJI ERROR
+# FIX WINDOWS EMOJI ERROR
 sys.stdout.reconfigure(encoding='utf-8')
 
-# TOKEN
+# BOT TOKEN FROM RENDER ENVIRONMENT
 TOKEN = os.getenv("BOT_TOKEN")
 
+# BOT
 bot = Bot(token=TOKEN)
 
+# DISPATCHER
 dp = Dispatcher(storage=MemoryStorage())
 
 # FLASK APP
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
     return "LossCut Pro Bot Running ✅"
 
@@ -56,6 +59,12 @@ async def get_amount(message: Message, state: FSMContext):
     try:
         amount = float(message.text)
 
+        if amount <= 0:
+            await message.answer(
+                "❌ Enter valid amount"
+            )
+            return
+
         await state.update_data(amount=amount)
 
         await message.answer(
@@ -66,14 +75,22 @@ async def get_amount(message: Message, state: FSMContext):
         await state.set_state(BetState.back_odds)
 
     except:
-        await message.answer("❌ Send valid amount")
+        await message.answer(
+            "❌ Send valid amount"
+        )
 
-# GET ODDS
+# GET BACK ODDS
 @dp.message(BetState.back_odds)
 async def get_back_odds(message: Message, state: FSMContext):
 
     try:
         back_odds = float(message.text)
+
+        if back_odds <= 1:
+            await message.answer(
+                "❌ Odds must be greater than 1"
+            )
+            return
 
         data = await state.get_data()
 
@@ -136,7 +153,7 @@ async def get_back_odds(message: Message, state: FSMContext):
 
             zero_odds += 0.1
 
-        # RISK CONTROL
+        # LOW LOSS
         response += (
             f"\n━━━━━━━━━━━━━━━━\n\n"
             f"🔴 RISK CONTROL\n\n"
@@ -171,23 +188,49 @@ async def get_back_odds(message: Message, state: FSMContext):
         await state.clear()
 
     except:
-        await message.answer("❌ Send valid odds")
+        await message.answer(
+            "❌ Send valid odds"
+        )
 
-# TELEGRAM BOT
+# TELEGRAM BOT POLLING
 async def start_bot_polling():
+
     print("Bot Running...")
+
+    # REMOVE WEBHOOK
+    await bot.delete_webhook(
+        drop_pending_updates=True
+    )
+
+    # START POLLING
     await dp.start_polling(bot)
 
+# RUN BOT IN THREAD
 def run_bot():
-    asyncio.run(start_bot_polling())
+
+    loop = asyncio.new_event_loop()
+
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(
+        start_bot_polling()
+    )
 
 # MAIN
 if __name__ == "__main__":
 
-    # RUN BOT IN THREAD
-    threading.Thread(target=run_bot).start()
+    # START TELEGRAM BOT
+    threading.Thread(
+        target=run_bot,
+        daemon=True
+    ).start()
 
-    # RUN FLASK WEB SERVER
-    port = int(os.environ.get("PORT", 10000))
+    # START FLASK WEB SERVER
+    port = int(
+        os.environ.get("PORT", 10000)
+    )
 
-    app.run(host="0.0.0.0", port=port)
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
