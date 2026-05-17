@@ -197,13 +197,16 @@ async def start_bot_polling():
 
     print("Bot Running...")
 
-    # REMOVE WEBHOOK
+    # DELETE WEBHOOK
     await bot.delete_webhook(
         drop_pending_updates=True
     )
 
     # START POLLING
-    await dp.start_polling(bot)
+    await dp.start_polling(
+        bot,
+        handle_signals=False
+    )
 
 # RUN BOT IN THREAD
 def run_bot():
