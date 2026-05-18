@@ -20,16 +20,28 @@ import sys
 # FIX WINDOWS EMOJI ERROR
 sys.stdout.reconfigure(encoding='utf-8')
 
+# =========================
 # BOT TOKEN
+# =========================
+
 TOKEN = os.getenv("BOT_TOKEN")
 
+# =========================
 # BOT
+# =========================
+
 bot = Bot(token=TOKEN)
 
+# =========================
 # DISPATCHER
+# =========================
+
 dp = Dispatcher(storage=MemoryStorage())
 
+# =========================
 # FLASK APP
+# =========================
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -79,7 +91,11 @@ async def start_bot(
 
     await message.answer(
         "🔥 Welcome To LossCut Pro Bot\n\n"
-        "📊 Select Bet Type",
+        "📊 Professional Trading Assistant\n"
+        "💹 Smart Hedge & Green Book Calculator\n"
+        "🛡️ Helps You Reduce Losses & Secure Profits\n"
+        "⚡ Fast Back ↔ Lay Calculations\n\n"
+        "📌 Select Bet Type Below",
         reply_markup=buttons
     )
 
@@ -204,7 +220,20 @@ async def get_odds(
 
         bet_type = data["bet_type"]
 
-        # OPPOSITE TYPE
+        # ENTRY WIN PROFIT
+
+        if bet_type == "BACK":
+
+            entry_profit = (
+                (odds - 1) * amount
+            )
+
+        else:
+
+            entry_profit = amount
+
+        # REVERSE TYPE
+
         if bet_type == "BACK":
 
             calc_type = "LAY"
@@ -218,7 +247,8 @@ async def get_odds(
 
             f"📊 Entry Type : {bet_type}\n"
             f"💰 Entry Stake : ₹{amount:.0f}\n"
-            f"📈 Entry Odds : {odds:.1f}\n\n"
+            f"📈 Entry Odds : {odds:.1f}\n"
+            f"🏆 Entry Win Profit : ₹{entry_profit:.0f}\n\n"
 
             f"━━━━━━━━━━━━━━━━\n\n"
         )
@@ -234,6 +264,7 @@ async def get_odds(
         results = 10
 
         # START RANGE
+
         if bet_type == "BACK":
 
             start = 1.0
@@ -254,6 +285,7 @@ async def get_odds(
         for i in range(results):
 
             # BACK -> LAY
+
             if bet_type == "BACK":
 
                 hedge_amount = (
@@ -261,6 +293,7 @@ async def get_odds(
                 ) / current
 
             # LAY -> BACK
+
             else:
 
                 hedge_amount = (
@@ -371,13 +404,32 @@ async def get_odds(
 
             current_risk += risk_step
 
+        # FOOTER
+
         response += (
             f"\n━━━━━━━━━━━━━━━━\n"
             f"✅ Trade Smart • Hedge Smart\n"
+            f"📊 Professional Back ↔ Lay Analysis\n"
             f"🤖 Powered By LossCut Pro"
         )
 
-        await message.answer(response)
+        # PAYMENT BUTTON
+
+        payment_buttons = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="💎 Upgrade To Premium",
+                        url="upi://pay?pa=yourupi@upi&pn=LossCutPro&cu=INR"
+                    )
+                ]
+            ]
+        )
+
+        await message.answer(
+            response,
+            reply_markup=payment_buttons
+        )
 
         await state.clear()
 
@@ -398,11 +450,13 @@ async def start_bot_polling():
     print("Bot Running...")
 
     # DELETE WEBHOOK
+
     await bot.delete_webhook(
         drop_pending_updates=True
     )
 
     # START POLLING
+
     await dp.start_polling(
         bot,
         handle_signals=False
@@ -429,12 +483,14 @@ def run_bot():
 if __name__ == "__main__":
 
     # START TELEGRAM BOT
+
     threading.Thread(
         target=run_bot,
         daemon=True
     ).start()
 
     # START FLASK WEB SERVER
+
     port = int(
         os.environ.get("PORT", 10000)
     )
