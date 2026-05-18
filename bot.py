@@ -1,6 +1,11 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram.types import (
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    CallbackQuery
+)
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -31,30 +36,110 @@ app = Flask(__name__)
 def home():
     return "LossCut Pro Bot Running ✅"
 
+# =========================
 # STATES
-class BetState(StatesGroup):
-    amount = State()
-    back_odds = State()
+# =========================
 
+class BetState(StatesGroup):
+
+    bet_type = State()
+
+    amount = State()
+
+    odds = State()
+
+# =========================
 # START / HI / HELLO
+# =========================
+
 @dp.message(CommandStart())
 @dp.message(F.text.lower().in_(["hi", "hello", "hey"]))
-async def start_bot(message: Message, state: FSMContext):
+async def start_bot(
+    message: Message,
+    state: FSMContext
+):
 
     await state.clear()
 
-    text = (
-        "🔥 Welcome To LossCut Pro Bot\n\n"
-        "💰 Send Entry Stake Amount"
+    buttons = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📈 BACK",
+                    callback_data="back"
+                ),
+
+                InlineKeyboardButton(
+                    text="📉 LAY",
+                    callback_data="lay"
+                )
+            ]
+        ]
     )
 
-    await message.answer(text)
+    await message.answer(
+        "🔥 Welcome To LossCut Pro Bot\n\n"
+        "📊 Select Bet Type",
+        reply_markup=buttons
+    )
 
-    await state.set_state(BetState.amount)
+# =========================
+# BACK BUTTON
+# =========================
 
+@dp.callback_query(F.data == "back")
+async def back_button(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+
+    await state.update_data(
+        bet_type="BACK"
+    )
+
+    await callback.message.answer(
+        "💰 Send BACK Stake Amount"
+    )
+
+    await state.set_state(
+        BetState.amount
+    )
+
+    await callback.answer()
+
+# =========================
+# LAY BUTTON
+# =========================
+
+@dp.callback_query(F.data == "lay")
+async def lay_button(
+    callback: CallbackQuery,
+    state: FSMContext
+):
+
+    await state.update_data(
+        bet_type="LAY"
+    )
+
+    await callback.message.answer(
+        "💰 Send LAY Stake Amount"
+    )
+
+    await state.set_state(
+        BetState.amount
+    )
+
+    await callback.answer()
+
+# =========================
 # GET AMOUNT
+# =========================
+
 @dp.message(BetState.amount)
-async def get_amount(message: Message, state: FSMContext):
+async def get_amount(
+    message: Message,
+    state: FSMContext
+):
 
     try:
 
@@ -68,15 +153,21 @@ async def get_amount(message: Message, state: FSMContext):
 
             return
 
-        await state.update_data(amount=amount)
+        await state.update_data(
+            amount=amount
+        )
+
+        data = await state.get_data()
+
+        bet_type = data["bet_type"]
 
         await message.answer(
-            "📈 Send Entry Back Odds\n\n"
-            "Example : 10"
+            f"📈 Send {bet_type} Odds\n\n"
+            f"Example : 5"
         )
 
         await state.set_state(
-            BetState.back_odds
+            BetState.odds
         )
 
     except:
@@ -85,15 +176,21 @@ async def get_amount(message: Message, state: FSMContext):
             "❌ Send valid amount"
         )
 
-# GET BACK ODDS
-@dp.message(BetState.back_odds)
-async def get_back_odds(message: Message, state: FSMContext):
+# =========================
+# GET ODDS
+# =========================
+
+@dp.message(BetState.odds)
+async def get_odds(
+    message: Message,
+    state: FSMContext
+):
 
     try:
 
-        back_odds = float(message.text)
+        odds = float(message.text)
 
-        if back_odds <= 1:
+        if odds <= 1:
 
             await message.answer(
                 "❌ Odds must be greater than 1"
@@ -105,53 +202,85 @@ async def get_back_odds(message: Message, state: FSMContext):
 
         amount = data["amount"]
 
+        bet_type = data["bet_type"]
+
+        # OPPOSITE TYPE
+        if bet_type == "BACK":
+
+            calc_type = "LAY"
+
+        else:
+
+            calc_type = "BACK"
+
         response = (
             f"🔥 LOSSCUT PRO ANALYSIS\n\n"
 
+            f"📊 Entry Type : {bet_type}\n"
             f"💰 Entry Stake : ₹{amount:.0f}\n"
-            f"📈 Entry Odds : {back_odds:.1f}\n\n"
+            f"📈 Entry Odds : {odds:.1f}\n\n"
 
             f"━━━━━━━━━━━━━━━━\n\n"
         )
 
         # =========================
-        # PROFIT BOOK OPTIONS
+        # PROFIT BOOK
         # =========================
 
         response += (
-            f"🟢 PROFIT BOOK OPTIONS\n\n"
+            f"🟢 {calc_type} PROFIT BOOK\n\n"
         )
 
-        profit_results = 10
+        results = 10
 
-        profit_start = 1.0
-        profit_end = back_odds
+        # START RANGE
+        if bet_type == "BACK":
 
-        profit_step = (
-            (profit_end - profit_start)
-            / (profit_results - 1)
+            start = 1.0
+
+        else:
+
+            start = 1.1
+
+        end = odds
+
+        step = (
+            (end - start)
+            / (results - 1)
         )
 
-        lay_odds = profit_start
+        current = start
 
-        for i in range(profit_results):
+        for i in range(results):
 
-            lay_amount = (
-                back_odds * amount
-            ) / lay_odds
+            # BACK -> LAY
+            if bet_type == "BACK":
 
-            profit = lay_amount - amount
+                hedge_amount = (
+                    odds * amount
+                ) / current
+
+            # LAY -> BACK
+            else:
+
+                hedge_amount = (
+                    (odds - 1) * amount
+                ) / (current - 1)
+
+            profit = (
+                hedge_amount - amount
+            )
 
             response += (
-                f"🟢 {lay_odds:.1f} "
-                f"→ Lay ₹{lay_amount:.0f} "
+                f"🟢 {current:.1f} "
+                f"→ {calc_type} ₹{hedge_amount:.0f} "
                 f"→ +₹{profit:.0f}\n"
             )
 
-            lay_odds += profit_step
+            current += step
 
         # =========================
-        # SAFE EXIT OPTIONS
+        # SAFE EXIT
         # =========================
 
         response += (
@@ -159,35 +288,42 @@ async def get_back_odds(message: Message, state: FSMContext):
             f"🟡 SAFE EXIT OPTIONS\n\n"
         )
 
-        safe_results = 10
+        safe_start = odds
 
-        safe_start = back_odds
-        safe_end = back_odds + 2
+        safe_end = odds + 2
 
         safe_step = (
             (safe_end - safe_start)
-            / (safe_results - 1)
+            / 9
         )
 
-        safe_odds = safe_start
+        current_safe = safe_start
 
-        for i in range(safe_results):
+        for i in range(10):
 
-            lay_amount = (
-                back_odds * amount
-            ) / safe_odds
+            if bet_type == "BACK":
+
+                hedge_amount = (
+                    odds * amount
+                ) / current_safe
+
+            else:
+
+                hedge_amount = (
+                    (odds - 1) * amount
+                ) / (current_safe - 1)
 
             safe_result = (
-                lay_amount - amount
+                hedge_amount - amount
             )
 
             response += (
-                f"🟡 {safe_odds:.1f} "
-                f"→ Lay ₹{lay_amount:.0f} "
+                f"🟡 {current_safe:.1f} "
+                f"→ {calc_type} ₹{hedge_amount:.0f} "
                 f"→ ₹{safe_result:.0f}\n"
             )
 
-            safe_odds += safe_step
+            current_safe += safe_step
 
         # =========================
         # RISK CONTROL
@@ -198,35 +334,42 @@ async def get_back_odds(message: Message, state: FSMContext):
             f"🔴 RISK CONTROL\n\n"
         )
 
-        risk_results = 10
+        risk_start = odds + 2
 
-        risk_start = back_odds + 2
-        risk_end = back_odds + 10
+        risk_end = odds + 10
 
         risk_step = (
             (risk_end - risk_start)
-            / (risk_results - 1)
+            / 9
         )
 
-        risk_odds = risk_start
+        current_risk = risk_start
 
-        for i in range(risk_results):
+        for i in range(10):
 
-            lay_amount = (
-                back_odds * amount
-            ) / risk_odds
+            if bet_type == "BACK":
+
+                hedge_amount = (
+                    odds * amount
+                ) / current_risk
+
+            else:
+
+                hedge_amount = (
+                    (odds - 1) * amount
+                ) / (current_risk - 1)
 
             loss = (
-                amount - lay_amount
+                amount - hedge_amount
             )
 
             response += (
-                f"🔴 {risk_odds:.1f} "
-                f"→ Lay ₹{lay_amount:.0f} "
+                f"🔴 {current_risk:.1f} "
+                f"→ {calc_type} ₹{hedge_amount:.0f} "
                 f"→ -₹{loss:.0f}\n"
             )
 
-            risk_odds += risk_step
+            current_risk += risk_step
 
         response += (
             f"\n━━━━━━━━━━━━━━━━\n"
@@ -238,13 +381,18 @@ async def get_back_odds(message: Message, state: FSMContext):
 
         await state.clear()
 
-    except:
+    except Exception as e:
+
+        print(e)
 
         await message.answer(
             "❌ Send valid odds"
         )
 
+# =========================
 # TELEGRAM BOT POLLING
+# =========================
+
 async def start_bot_polling():
 
     print("Bot Running...")
@@ -260,7 +408,10 @@ async def start_bot_polling():
         handle_signals=False
     )
 
-# RUN BOT IN THREAD
+# =========================
+# RUN BOT THREAD
+# =========================
+
 def run_bot():
 
     loop = asyncio.new_event_loop()
@@ -271,7 +422,10 @@ def run_bot():
         start_bot_polling()
     )
 
+# =========================
 # MAIN
+# =========================
+
 if __name__ == "__main__":
 
     # START TELEGRAM BOT
