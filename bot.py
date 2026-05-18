@@ -92,9 +92,7 @@ async def start_bot(
     await message.answer(
         "🔥 Welcome To LossCut Pro Bot\n\n"
         "📊 Professional Trading Assistant\n"
-        "💹 Smart Hedge & Green Book Calculator\n"
-        "🛡️ Helps You Reduce Losses & Secure Profits\n"
-        "⚡ Fast Back ↔ Lay Calculations\n\n"
+        "🛡️ Helps You Reduce Losses & Secure Profits\n\n"
         "📌 Select Bet Type Below",
         reply_markup=buttons
     )
@@ -422,7 +420,6 @@ async def get_odds(
         response += (
             f"\n━━━━━━━━━━━━━━━━\n"
             f"✅ Trade Smart • Hedge Smart\n"
-            f"📊 Professional Back ↔ Lay Analysis\n"
             f"🤖 Powered By LossCut Pro"
         )
 
@@ -434,8 +431,8 @@ async def get_odds(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="💎 Upgrade To Premium",
-                        url="https://google.com"
+                        text="🤲 Help Poor People",
+                        url="upi://pay?pa=blackheart.in9@ybl&pn=LossCutPro&cu=INR"
                     )
                 ]
             ]
