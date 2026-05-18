@@ -1,11 +1,6 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
-from aiogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    CallbackQuery
-)
+from aiogram.types import Message
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -38,93 +33,28 @@ def home():
 
 # STATES
 class BetState(StatesGroup):
-
-    bet_type = State()
-
     amount = State()
-
-    odds = State()
+    back_odds = State()
 
 # START / HI / HELLO
 @dp.message(CommandStart())
 @dp.message(F.text.lower().in_(["hi", "hello", "hey"]))
-async def start_bot(
-    message: Message,
-    state: FSMContext
-):
+async def start_bot(message: Message, state: FSMContext):
 
     await state.clear()
 
-    buttons = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="📈 BACK",
-                    callback_data="back"
-                ),
-
-                InlineKeyboardButton(
-                    text="📉 LAY",
-                    callback_data="lay"
-                )
-            ]
-        ]
-    )
-
-    await message.answer(
+    text = (
         "🔥 Welcome To LossCut Pro Bot\n\n"
-        "📊 Select Bet Type",
-        reply_markup=buttons
+        "💰 Send Entry Stake Amount"
     )
 
-# BACK BUTTON
-@dp.callback_query(F.data == "back")
-async def back_selected(
-    callback: CallbackQuery,
-    state: FSMContext
-):
+    await message.answer(text)
 
-    await state.update_data(
-        bet_type="BACK"
-    )
-
-    await callback.message.answer(
-        "💰 Send BACK Stake Amount"
-    )
-
-    await state.set_state(
-        BetState.amount
-    )
-
-    await callback.answer()
-
-# LAY BUTTON
-@dp.callback_query(F.data == "lay")
-async def lay_selected(
-    callback: CallbackQuery,
-    state: FSMContext
-):
-
-    await state.update_data(
-        bet_type="LAY"
-    )
-
-    await callback.message.answer(
-        "💰 Send LAY Stake Amount"
-    )
-
-    await state.set_state(
-        BetState.amount
-    )
-
-    await callback.answer()
+    await state.set_state(BetState.amount)
 
 # GET AMOUNT
 @dp.message(BetState.amount)
-async def get_amount(
-    message: Message,
-    state: FSMContext
-):
+async def get_amount(message: Message, state: FSMContext):
 
     try:
 
@@ -138,21 +68,15 @@ async def get_amount(
 
             return
 
-        await state.update_data(
-            amount=amount
-        )
-
-        data = await state.get_data()
-
-        bet_type = data["bet_type"]
+        await state.update_data(amount=amount)
 
         await message.answer(
-            f"📈 Send {bet_type} Odds\n\n"
-            f"Example : 10"
+            "📈 Send Entry Back Odds\n\n"
+            "Example : 10"
         )
 
         await state.set_state(
-            BetState.odds
+            BetState.back_odds
         )
 
     except:
@@ -161,18 +85,15 @@ async def get_amount(
             "❌ Send valid amount"
         )
 
-# GET ODDS
-@dp.message(BetState.odds)
-async def get_odds(
-    message: Message,
-    state: FSMContext
-):
+# GET BACK ODDS
+@dp.message(BetState.back_odds)
+async def get_back_odds(message: Message, state: FSMContext):
 
     try:
 
-        odds = float(message.text)
+        back_odds = float(message.text)
 
-        if odds <= 1:
+        if back_odds <= 1:
 
             await message.answer(
                 "❌ Odds must be greater than 1"
@@ -184,23 +105,11 @@ async def get_odds(
 
         amount = data["amount"]
 
-        bet_type = data["bet_type"]
-
-        # OPPOSITE CALCULATION
-        if bet_type == "BACK":
-
-            calc_type = "LAY"
-
-        else:
-
-            calc_type = "BACK"
-
         response = (
             f"🔥 LOSSCUT PRO ANALYSIS\n\n"
 
-            f"📊 Bet Type : {bet_type}\n"
             f"💰 Entry Stake : ₹{amount:.0f}\n"
-            f"📈 Entry Odds : {odds:.1f}\n\n"
+            f"📈 Entry Odds : {back_odds:.1f}\n\n"
 
             f"━━━━━━━━━━━━━━━━\n\n"
         )
@@ -210,39 +119,36 @@ async def get_odds(
         # =========================
 
         response += (
-            f"🟢 {calc_type} PROFIT BOOK\n\n"
+            f"🟢 PROFIT BOOK OPTIONS\n\n"
         )
 
         profit_results = 10
 
         profit_start = 1.0
-
-        profit_end = odds
+        profit_end = back_odds
 
         profit_step = (
             (profit_end - profit_start)
             / (profit_results - 1)
         )
 
-        current_profit = profit_start
+        lay_odds = profit_start
 
         for i in range(profit_results):
 
-            hedge_amount = (
-                odds * amount
-            ) / current_profit
+            lay_amount = (
+                back_odds * amount
+            ) / lay_odds
 
-            profit = (
-                hedge_amount - amount
-            )
+            profit = lay_amount - amount
 
             response += (
-                f"🟢 {current_profit:.1f} "
-                f"→ {calc_type} ₹{hedge_amount:.0f} "
+                f"🟢 {lay_odds:.1f} "
+                f"→ Lay ₹{lay_amount:.0f} "
                 f"→ +₹{profit:.0f}\n"
             )
 
-            current_profit += profit_step
+            lay_odds += profit_step
 
         # =========================
         # SAFE EXIT OPTIONS
@@ -255,34 +161,33 @@ async def get_odds(
 
         safe_results = 10
 
-        safe_start = odds
-
-        safe_end = odds + 2
+        safe_start = back_odds
+        safe_end = back_odds + 2
 
         safe_step = (
             (safe_end - safe_start)
             / (safe_results - 1)
         )
 
-        current_safe = safe_start
+        safe_odds = safe_start
 
         for i in range(safe_results):
 
-            hedge_amount = (
-                odds * amount
-            ) / current_safe
+            lay_amount = (
+                back_odds * amount
+            ) / safe_odds
 
-            safe_value = (
-                hedge_amount - amount
+            safe_result = (
+                lay_amount - amount
             )
 
             response += (
-                f"🟡 {current_safe:.1f} "
-                f"→ {calc_type} ₹{hedge_amount:.0f} "
-                f"→ ₹{safe_value:.0f}\n"
+                f"🟡 {safe_odds:.1f} "
+                f"→ Lay ₹{lay_amount:.0f} "
+                f"→ ₹{safe_result:.0f}\n"
             )
 
-            current_safe += safe_step
+            safe_odds += safe_step
 
         # =========================
         # RISK CONTROL
@@ -295,34 +200,33 @@ async def get_odds(
 
         risk_results = 10
 
-        risk_start = odds + 2
-
-        risk_end = odds + 10
+        risk_start = back_odds + 2
+        risk_end = back_odds + 10
 
         risk_step = (
             (risk_end - risk_start)
             / (risk_results - 1)
         )
 
-        current_risk = risk_start
+        risk_odds = risk_start
 
         for i in range(risk_results):
 
-            hedge_amount = (
-                odds * amount
-            ) / current_risk
+            lay_amount = (
+                back_odds * amount
+            ) / risk_odds
 
             loss = (
-                amount - hedge_amount
+                amount - lay_amount
             )
 
             response += (
-                f"🔴 {current_risk:.1f} "
-                f"→ {calc_type} ₹{hedge_amount:.0f} "
+                f"🔴 {risk_odds:.1f} "
+                f"→ Lay ₹{lay_amount:.0f} "
                 f"→ -₹{loss:.0f}\n"
             )
 
-            current_risk += risk_step
+            risk_odds += risk_step
 
         response += (
             f"\n━━━━━━━━━━━━━━━━\n"
