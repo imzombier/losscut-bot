@@ -220,7 +220,9 @@ async def get_odds(
 
         bet_type = data["bet_type"]
 
+        # =========================
         # ENTRY PROFIT
+        # =========================
 
         if bet_type == "BACK":
 
@@ -413,7 +415,9 @@ async def get_odds(
 
             current_risk += risk_step
 
+        # =========================
         # FOOTER
+        # =========================
 
         response += (
             f"\n━━━━━━━━━━━━━━━━\n"
@@ -422,14 +426,16 @@ async def get_odds(
             f"🤖 Powered By LossCut Pro"
         )
 
-        # PAYMENT BUTTON
+        # =========================
+        # PREMIUM BUTTON
+        # =========================
 
-        payment_buttons = InlineKeyboardMarkup(
+        premium_buttons = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
                         text="💎 Upgrade To Premium",
-                        url="upi://pay?pa=yourupi@upi&pn=LossCutPro&cu=INR"
+                        url="https://google.com"
                     )
                 ]
             ]
@@ -437,7 +443,7 @@ async def get_odds(
 
         await message.answer(
             response,
-            reply_markup=payment_buttons
+            reply_markup=premium_buttons
         )
 
         await state.clear()
