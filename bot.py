@@ -220,7 +220,7 @@ async def get_odds(
 
         bet_type = data["bet_type"]
 
-        # ENTRY WIN PROFIT
+        # ENTRY PROFIT
 
         if bet_type == "BACK":
 
@@ -228,17 +228,11 @@ async def get_odds(
                 (odds - 1) * amount
             )
 
-        else:
-
-            entry_profit = amount
-
-        # REVERSE TYPE
-
-        if bet_type == "BACK":
-
             calc_type = "LAY"
 
         else:
+
+            entry_profit = amount
 
             calc_type = "BACK"
 
@@ -263,15 +257,15 @@ async def get_odds(
 
         results = 10
 
-        # START RANGE
+        # SAFE START
 
         if bet_type == "BACK":
 
-            start = 1.0
+            start = 1.1
 
         else:
 
-            start = 1.1
+            start = 1.2
 
         end = odds
 
@@ -284,31 +278,36 @@ async def get_odds(
 
         for i in range(results):
 
-            # BACK -> LAY
+            try:
 
-            if bet_type == "BACK":
+                # BACK -> LAY
 
-                hedge_amount = (
-                    odds * amount
-                ) / current
+                if bet_type == "BACK":
 
-            # LAY -> BACK
+                    hedge_amount = (
+                        odds * amount
+                    ) / current
 
-            else:
+                # LAY -> BACK
 
-                hedge_amount = (
-                    (odds - 1) * amount
-                ) / (current - 1)
+                else:
 
-            profit = (
-                hedge_amount - amount
-            )
+                    hedge_amount = (
+                        (odds - 1) * amount
+                    ) / (current - 1)
 
-            response += (
-                f"🟢 {current:.1f} "
-                f"→ {calc_type} ₹{hedge_amount:.0f} "
-                f"→ +₹{profit:.0f}\n"
-            )
+                profit = (
+                    hedge_amount - amount
+                )
+
+                response += (
+                    f"🟢 {current:.1f} "
+                    f"→ {calc_type} ₹{hedge_amount:.0f} "
+                    f"→ +₹{profit:.0f}\n"
+                )
+
+            except:
+                pass
 
             current += step
 
@@ -321,7 +320,7 @@ async def get_odds(
             f"🟡 SAFE EXIT OPTIONS\n\n"
         )
 
-        safe_start = odds
+        safe_start = odds + 0.1
 
         safe_end = odds + 2
 
@@ -334,27 +333,32 @@ async def get_odds(
 
         for i in range(10):
 
-            if bet_type == "BACK":
+            try:
 
-                hedge_amount = (
-                    odds * amount
-                ) / current_safe
+                if bet_type == "BACK":
 
-            else:
+                    hedge_amount = (
+                        odds * amount
+                    ) / current_safe
 
-                hedge_amount = (
-                    (odds - 1) * amount
-                ) / (current_safe - 1)
+                else:
 
-            safe_result = (
-                hedge_amount - amount
-            )
+                    hedge_amount = (
+                        (odds - 1) * amount
+                    ) / (current_safe - 1)
 
-            response += (
-                f"🟡 {current_safe:.1f} "
-                f"→ {calc_type} ₹{hedge_amount:.0f} "
-                f"→ ₹{safe_result:.0f}\n"
-            )
+                safe_result = (
+                    hedge_amount - amount
+                )
+
+                response += (
+                    f"🟡 {current_safe:.1f} "
+                    f"→ {calc_type} ₹{hedge_amount:.0f} "
+                    f"→ ₹{safe_result:.0f}\n"
+                )
+
+            except:
+                pass
 
             current_safe += safe_step
 
@@ -367,7 +371,7 @@ async def get_odds(
             f"🔴 RISK CONTROL\n\n"
         )
 
-        risk_start = odds + 2
+        risk_start = odds + 2.1
 
         risk_end = odds + 10
 
@@ -380,27 +384,32 @@ async def get_odds(
 
         for i in range(10):
 
-            if bet_type == "BACK":
+            try:
 
-                hedge_amount = (
-                    odds * amount
-                ) / current_risk
+                if bet_type == "BACK":
 
-            else:
+                    hedge_amount = (
+                        odds * amount
+                    ) / current_risk
 
-                hedge_amount = (
-                    (odds - 1) * amount
-                ) / (current_risk - 1)
+                else:
 
-            loss = (
-                amount - hedge_amount
-            )
+                    hedge_amount = (
+                        (odds - 1) * amount
+                    ) / (current_risk - 1)
 
-            response += (
-                f"🔴 {current_risk:.1f} "
-                f"→ {calc_type} ₹{hedge_amount:.0f} "
-                f"→ -₹{loss:.0f}\n"
-            )
+                loss = (
+                    amount - hedge_amount
+                )
+
+                response += (
+                    f"🔴 {current_risk:.1f} "
+                    f"→ {calc_type} ₹{hedge_amount:.0f} "
+                    f"→ -₹{loss:.0f}\n"
+                )
+
+            except:
+                pass
 
             current_risk += risk_step
 
@@ -449,13 +458,9 @@ async def start_bot_polling():
 
     print("Bot Running...")
 
-    # DELETE WEBHOOK
-
     await bot.delete_webhook(
         drop_pending_updates=True
     )
-
-    # START POLLING
 
     await dp.start_polling(
         bot,
@@ -482,14 +487,10 @@ def run_bot():
 
 if __name__ == "__main__":
 
-    # START TELEGRAM BOT
-
     threading.Thread(
         target=run_bot,
         daemon=True
     ).start()
-
-    # START FLASK WEB SERVER
 
     port = int(
         os.environ.get("PORT", 10000)
