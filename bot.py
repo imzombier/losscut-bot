@@ -432,7 +432,7 @@ async def get_odds(
                 [
                     InlineKeyboardButton(
                         text="🤲 Help Poor People",
-                        url="upi://pay?pa=blackheart.in9@ybl&pn=LossCutPro&cu=INR"
+                        url="https://upi-payment-link.vercel.app/pay?pa=blackheart.in9@ybl&pn=GKSolutions"
                     )
                 ]
             ]
