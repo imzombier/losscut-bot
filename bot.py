@@ -572,7 +572,7 @@ async def get_odds(
                 [
                     InlineKeyboardButton(
                         text="🤲 Help Poor People",
-                        url="https://YOUR-RENDER-URL.onrender.com/donate"
+                        url="https://losscut-bot.onrender.com/donate"
                     )
                 ]
             ]
