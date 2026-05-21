@@ -152,18 +152,17 @@ def donate():
             <h1>🤲 Help Poor People</h1>
 
             <p>
-            Your small support helps improve
-            LossCut Pro and support poor people ❤️
+            Your support helps for poor people ❤️
             </p>
 
             <!-- QR IMAGE -->
 
-            <img src="https://i.imgur.com/2DhmtJ4.png">
+            <img src="photo_2026-05-21_07-06-33.jpg">
 
             <!-- GPay -->
 
             <a class="btn gpay"
-            href="upi://pay?pa=blackheart.in@ybl&pn=GKSolutions&cu=INR">
+            href="upi://pay?pa=Q398862448@ybl&pn=GKSolutions&cu=INR">
 
             💚 Pay Using Google Pay
 
@@ -172,7 +171,7 @@ def donate():
             <!-- PhonePe -->
 
             <a class="btn phonepe"
-            href="upi://pay?pa=blackheart.in@ybl&pn=GKSolutions&cu=INR">
+            href="upi://pay?pa=Q398862448@ybl&pn=GKSolutions&cu=INR">
 
             💜 Pay Using PhonePe
 
@@ -181,7 +180,7 @@ def donate():
             <!-- Paytm -->
 
             <a class="btn paytm"
-            href="upi://pay?pa=blackheart.in@ybl&pn=GKSolutions&cu=INR">
+            href="upi://pay?pa=Q398862448@ybl&pn=GKSolutions&cu=INR">
 
             💙 Pay Using Paytm
 
