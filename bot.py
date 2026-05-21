@@ -10,14 +10,17 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from flask import Flask
+from flask import Flask, render_template_string
 
 import asyncio
 import threading
 import os
 import sys
 
+# =========================
 # FIX WINDOWS EMOJI ERROR
+# =========================
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 # =========================
@@ -44,9 +47,155 @@ dp = Dispatcher(storage=MemoryStorage())
 
 app = Flask(__name__)
 
+# =========================
+# HOME PAGE
+# =========================
+
 @app.route("/")
 def home():
-    return "LossCut Pro Bot Running ✅"
+
+    return """
+    <h2 style='font-family:Arial;text-align:center;
+    margin-top:50px;'>
+    ✅ LossCut Pro Bot Running
+    </h2>
+    """
+
+# =========================
+# DONATION PAGE
+# =========================
+
+@app.route("/donate")
+def donate():
+
+    html = """
+
+    <!DOCTYPE html>
+
+    <html>
+
+    <head>
+
+        <title>Support LossCut Pro</title>
+
+        <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+        <style>
+
+            body{
+                background:#0f172a;
+                font-family:Arial;
+                text-align:center;
+                color:white;
+                padding:20px;
+            }
+
+            .card{
+                background:#1e293b;
+                max-width:420px;
+                margin:auto;
+                padding:25px;
+                border-radius:20px;
+                box-shadow:0 0 20px rgba(0,0,0,0.4);
+            }
+
+            h1{
+                color:#22c55e;
+            }
+
+            p{
+                color:#cbd5e1;
+                line-height:1.7;
+            }
+
+            img{
+                width:260px;
+                border-radius:20px;
+                border:5px solid white;
+                margin-top:20px;
+                margin-bottom:20px;
+            }
+
+            .btn{
+                display:block;
+                width:90%;
+                margin:12px auto;
+                padding:15px;
+                border-radius:12px;
+                text-decoration:none;
+                font-size:18px;
+                font-weight:bold;
+                color:white;
+            }
+
+            .gpay{
+                background:#4285F4;
+            }
+
+            .phonepe{
+                background:#5f259f;
+            }
+
+            .paytm{
+                background:#00b9f5;
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+
+        <div class="card">
+
+            <h1>🤲 Help Poor People</h1>
+
+            <p>
+            Your small support helps improve
+            LossCut Pro and support poor people ❤️
+            </p>
+
+            <!-- QR IMAGE -->
+
+            <img src="https://i.imgur.com/2DhmtJ4.png">
+
+            <!-- GPay -->
+
+            <a class="btn gpay"
+            href="upi://pay?pa=blackheart.in@ybl&pn=GKSolutions&cu=INR">
+
+            💚 Pay Using Google Pay
+
+            </a>
+
+            <!-- PhonePe -->
+
+            <a class="btn phonepe"
+            href="upi://pay?pa=blackheart.in@ybl&pn=GKSolutions&cu=INR">
+
+            💜 Pay Using PhonePe
+
+            </a>
+
+            <!-- Paytm -->
+
+            <a class="btn paytm"
+            href="upi://pay?pa=blackheart.in@ybl&pn=GKSolutions&cu=INR">
+
+            💙 Pay Using Paytm
+
+            </a>
+
+        </div>
+
+    </body>
+
+    </html>
+
+    """
+
+    return render_template_string(html)
 
 # =========================
 # STATES
@@ -92,7 +241,8 @@ async def start_bot(
     await message.answer(
         "🔥 Welcome To LossCut Pro Bot\n\n"
         "📊 Professional Trading Assistant\n"
-        "🛡️ Helps You Reduce Losses & Secure Profits\n\n"
+        "🛡️ Helps You Reduce Losses & Secure Profits\n"
+        "⚡ Fast Back ↔ Lay Calculations\n\n"
         "📌 Select Bet Type Below",
         reply_markup=buttons
     )
@@ -218,10 +368,6 @@ async def get_odds(
 
         bet_type = data["bet_type"]
 
-        # =========================
-        # ENTRY PROFIT
-        # =========================
-
         if bet_type == "BACK":
 
             entry_profit = (
@@ -257,8 +403,6 @@ async def get_odds(
 
         results = 10
 
-        # SAFE START
-
         if bet_type == "BACK":
 
             start = 1.1
@@ -280,15 +424,11 @@ async def get_odds(
 
             try:
 
-                # BACK -> LAY
-
                 if bet_type == "BACK":
 
                     hedge_amount = (
                         odds * amount
                     ) / current
-
-                # LAY -> BACK
 
                 else:
 
@@ -424,15 +564,15 @@ async def get_odds(
         )
 
         # =========================
-        # PREMIUM BUTTON
+        # DONATE BUTTON
         # =========================
 
-        premium_buttons = InlineKeyboardMarkup(
+        donate_buttons = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
                         text="🤲 Help Poor People",
-                        url="https://pay.google.com/gp/p/ui/pay?pa=blackheart.in@ybl&pn=GKSolutions"
+                        url="https://YOUR-RENDER-URL.onrender.com/donate"
                     )
                 ]
             ]
@@ -440,7 +580,7 @@ async def get_odds(
 
         await message.answer(
             response,
-            reply_markup=premium_buttons
+            reply_markup=donate_buttons
         )
 
         await state.clear()
