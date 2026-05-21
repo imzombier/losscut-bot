@@ -157,7 +157,7 @@ def donate():
 
             <!-- QR IMAGE -->
 
-            <img src="photo_2026-05-21_07-06-33.jpg">
+            <img src="/photo_2026-05-21_07-06-33.jpg">
 
             <!-- GPay -->
 
@@ -239,9 +239,8 @@ async def start_bot(
 
     await message.answer(
         "🔥 Welcome To LossCut Pro Bot\n\n"
-        "📊 Professional Trading Assistant\n"
-        "🛡️ Helps You Reduce Losses & Secure Profits\n"
-        "⚡ Fast Back ↔ Lay Calculations\n\n"
+        "🛡️ I Will Helps You Reduce Losses & Secure Profits\n\n"
+
         "📌 Select Bet Type Below",
         reply_markup=buttons
     )
