@@ -157,12 +157,12 @@ def donate():
 
             <!-- QR IMAGE -->
 
-            <img src="/photo_2026-05-21_07-06-33.jpg">
+            <img src="/static/qr1.jpg">
 
             <!-- GPay -->
 
             <a class="btn gpay"
-            href="upi://pay?pa=Q398862448@ybl&pn=GKSolutions&cu=INR">
+            href="upi://pay?pa=8096091809@pthdfc&pn=Donation%20From%20LossCut-Pro&cu=INR">
 
             💚 Pay Using Google Pay
 
@@ -171,7 +171,7 @@ def donate():
             <!-- PhonePe -->
 
             <a class="btn phonepe"
-            href="upi://pay?pa=Q398862448@ybl&pn=GKSolutions&cu=INR">
+            href="upi://pay?pa=8096091809@pthdfc&pn=Donation%20From%20LossCut-Pro&cu=INR">
 
             💜 Pay Using PhonePe
 
@@ -180,7 +180,7 @@ def donate():
             <!-- Paytm -->
 
             <a class="btn paytm"
-            href="upi://pay?pa=Q398862448@ybl&pn=GKSolutions&cu=INR">
+            href="upi://pay?pa=8096091809@pthdfc&pn=Donation%20From%20LossCut-Pro&cu=INR">
 
             💙 Pay Using Paytm
 
