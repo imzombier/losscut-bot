@@ -76,7 +76,7 @@ def donate():
 
     <head>
 
-        <title>Support LossCut Pro</title>
+        <title>Help Poor People</title>
 
         <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
@@ -84,61 +84,38 @@ def donate():
         <style>
 
             body{
-                background:#0f172a;
-                font-family:Arial;
+                margin:0;
+                background:#f5f7fb;
                 text-align:center;
-                color:white;
-                padding:20px;
             }
 
-            .card{
-                background:#1e293b;
-                max-width:420px;
+            .container{
+                max-width:500px;
                 margin:auto;
-                padding:25px;
-                border-radius:20px;
-                box-shadow:0 0 20px rgba(0,0,0,0.4);
+                position:relative;
             }
 
-            h1{
-                color:#22c55e;
-            }
-
-            p{
-                color:#cbd5e1;
-                line-height:1.7;
-            }
-
-            img{
-                width:260px;
-                border-radius:20px;
-                border:5px solid white;
-                margin-top:20px;
-                margin-bottom:20px;
-            }
-
-            .btn{
+            .main-image{
+                width:100%;
                 display:block;
-                width:90%;
-                margin:12px auto;
-                padding:15px;
-                border-radius:12px;
-                text-decoration:none;
-                font-size:18px;
-                font-weight:bold;
-                color:white;
             }
 
-            .gpay{
-                background:#4285F4;
-            }
+            /* CLICKABLE UPI APPS AREA */
 
-            .phonepe{
-                background:#5f259f;
-            }
+            .upi-click{
 
-            .paytm{
-                background:#00b9f5;
+                position:absolute;
+
+                bottom:120px;
+
+                left:15px;
+
+                width:92%;
+
+                height:260px;
+
+                z-index:10;
+
             }
 
         </style>
@@ -147,41 +124,18 @@ def donate():
 
     <body>
 
-        <div class="card">
+        <div class="container">
 
-            <h1>🤲 Help Poor People</h1>
+            <!-- FULL DONATION IMAGE -->
 
-            <p>
-            Your support helps for poor people ❤️
-            </p>
+            <img class="main-image"
+            src="/static/donation.jpg">
 
-            <!-- QR IMAGE -->
+            <!-- CLICKABLE UPI AREA -->
 
-            <img src="/static/qr1.jpg">
+            <a class="upi-click"
 
-            <!-- GPay -->
-
-            <a class="btn gpay"
-            href="upi://pay?pa=8096091809@pthdfc&pn=LossCutProDonation&cu=INR"
-            💚 Pay Using Google Pay
-
-            </a>
-
-            <!-- PhonePe -->
-
-            <a class="btn phonepe"
-            href="upi://pay?pa=8096091809@pthdfc&pn=LossCutProDonation&cu=INR"
-
-            💜 Pay Using PhonePe
-
-            </a>
-
-            <!-- Paytm -->
-
-            <a class="btn paytm"
-            href="upi://pay?pa=8096091809@pthdfc&pn=LossCutProDonation&cu=INR"
-
-            💙 Pay Using Paytm
+            href="upi://pay?pa=8096091809@pthdfc&pn=LossCutProDonation&cu=INR">
 
             </a>
 
